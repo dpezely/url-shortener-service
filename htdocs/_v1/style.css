@@ -1,0 +1,23 @@
+/* style.css for url-shortener */
+body {background-color:white; color:#393; font-family:sans-serif}
+
+/* For logo/branding: */
+#header {background-color:#696; height:3ex}
+#footer {background-color:#696; height:2ex}
+
+.url-shorten-form input {width:95%}
+
+.shortened-url textarea {height:1.5em; width:95%}
+
+.known-phishing {color:red}
+.known-phishing #full-url {font-family:monospace}
+
+@media only screen and (min-device-width:600px) {
+    .shortened-url,
+    .url-shorten-form {margin:15%}
+}
+
+@media print {
+    .shortened-url,
+    .url-shorten-form {font-size:9pt; background-color:white; color:black}
+}

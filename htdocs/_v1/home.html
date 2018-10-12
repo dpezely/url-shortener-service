@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>URL Shortener</title>
+<link href="style.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+<div id="header"></div>
+
+<h1>URL Shortener</h1>
+
+<form method="POST" action="/_v1/shorten">
+  <div class="url-shorten-form">
+
+    <label><div>Enter Full URL to be shortened:</div>
+      <input name="url" tabindex="1" maxlength="900" spellcheck="false"
+             placeholder="https://example.com/your-web-address">
+    </label>
+
+  </div>
+</form>
+
+<div id="footer"></div>
+
+</body></html>
