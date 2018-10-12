@@ -1,24 +1,38 @@
 URL Shortener Service
 =====================
 
+Given a long URL such as
+`https://play.org/articles/introduction-to-natural-language-processing`
+create a short URL like Example.com/q17djp.  Then when using the short
+version, be automatically forwarded to the long one again.
+
+For simplicity, examples below use Localhost for handling short URLs.  A
+modest laptop computer should be more than adequate to run this software for
+education and demonstration purposes.
+
+You supply a web app hosting service and domain name (e.g., example.com),
+and this software covers everything else from a technical operations
+perspective.  While there's room for improvement, it's sufficient for
+launching v1.0 of a revenue-generating enterprise.
+
 ## Criteria
 
 The exercise was to "build a url shortener" capable of handling
-approximately 50 requests per second initially and increasing.
+approximately 50 requests per second initially and increasing from there.
 
 URL Shortener services are fairly well understood as of 2018.
 
 One key requirement was enforcing an anti-phishing policy that includes
-checking against known offending URLs, such as one supplied by
+checking against known offending URLs, such as from the list supplied by
 [PhishTank](https://phishtank.com/developer_info.php).
 
 This implementation was intended as a complete, deployable *service*.
 Having worked in other programming languages such as Rust recently, the
-added bits here were mainly for getting my sealegs again with Python 3.
+added bits here were mainly for getting my sea-legs again with Python 3.
 
 There were templates intended to be provided that were unavailable (due to
 GitHub repo permission issues beyond my control), so everything for offering
-an end-to-end service was freshly created.
+an end-to-end service was freshly created and included here.
 
 ## Design
 
@@ -152,7 +166,7 @@ accommodate geographically distributed read-only nodes.
 - More documentation
 - More robust Dockerfile per your deployment environment(s)
   + Chaining Docker build: base for build/dev and extension for release/production
-- Generate file: Dockerfile, Makefile, Bash scripts and nginx.conf
+- Generate files: Dockerfile, Makefile, Bash scripts and nginx.conf
   + Generate via Chef, Puppet or similar tool
   + Configuration should be defined only once ("one source of truth", etc.)
 - Web design make-over:
@@ -200,7 +214,7 @@ may require using `sudo`)
 	  -p 8088:80  url-shortener ./one-writer-multiple-readers.sh
 
 When running from within Docker or other containers, be aware subdirectories
-and files will be created in your current directory.  These files will be
+and files will be created in your current directory.  These files may be
 owned by `root`.
 
 ## Running As Command-line Utility
@@ -209,13 +223,15 @@ Run `make` to display basic help:
 
 	make
     
-You may want to run the following commands inside of a Docker container to
-ensure a pristine environment:
+You may want to run most commands below inside of a Docker container to
+ensure a pristine environment.  If so, first run these commands to set-up
+and then launch a shell within the container:
 
 	make docker-image
     make docker-dev
 
-Once dependencies have been resolved (see above), specific usage is as follows.
+Once dependencies have been resolved (see above), specific usage is as
+follows.
 
 Display command-line options:
 
@@ -224,35 +240,35 @@ Display command-line options:
 Supply a full URL to be shortened:
 
     ./url-shortener.py https://example.com/foo
-    Output:
-	Shorten: status=SHORTENED, pathname=WW/2H/mtz7yDFs9jjrVMaoyz.txt, shortened=BG
 
-The actual encoded value that you see may be different here.
+> Shorten: **status=SHORTENED**, pathname=WW/2H/mtz7yDFs9jjrVMaoyz.txt, shortened=BG
+
+The actual encoded value that you see may be different than shown here.
 
 Try again, and see that it would be a duplicate:
 
     ./url-shortener.py https://example.com/foo
-    Output:
-	Shorten: status=DUPLICATE, pathname=WW/2H/mtz7yDFs9jjrVMaoyz.txt, shortened=BG
+
+> Shorten: **status=DUPLICATE**, pathname=WW/2H/mtz7yDFs9jjrVMaoyz.txt, shortened=BG
 
 Try another URL:
 
 	./url-shortener.py https://example.com/bar
-    Output:
-    Shorten: status=SHORTENED, pathname=vi/8u/eiKMYWtAkUMQWrDFCe.txt, shortened=BH
+
+> Shorten: **status=SHORTENED**, pathname=vi/8u/eiKMYWtAkUMQWrDFCe.txt, shortened=BH
 
 Resolve short, relative URI using encoded value from right side of
 `shortened=` from results of a previous successful command:
 
 	./url-shortener.py /BH
-    Output:
-	Resolve: status=FOUND, pathname=BH.txt, full_url=https://example.com/bar
+
+> Resolve: **status=FOUND**, pathname=BH.txt, full_url=https://example.com/bar
 
 Accommodates URIs with or without leading slash:
 
 	./url-shortener.py BH
-    Output:
-	Resolve: status=FOUND, pathname=BH.txt, full_url=https://example.com/bar
+
+> Resolve: **status=FOUND**, pathname=BH.txt, full_url=https://example.com/bar
 
 ## Running As HTTP Service
 
@@ -293,7 +309,8 @@ your anticipated traffic, and the few seconds for updating on production
 server instance will be indistinguishable from network latency for most
 visitors.
 
-Read-only app workers may continue running.
+Read-only app workers may continue running uninterrupted throughout the
+process.
 
 With those caveats addressed-- to actually update the known phishing URLs,
 run:
@@ -360,7 +377,7 @@ truth*.)
 
 ## Automated Testing
 
-Minimal test coverage exists.
+A minimum of test coverage exists.
 
 Run from subdirectory containing Python modules: (should be same as
 containing this README file)
@@ -378,11 +395,11 @@ The following sequence confirms:
 - Building Docker container
 - Adding a URL from the known phishing list
 - Adding same URL, but system gracefully and ergonomically handles the duplicate
-- Apply list of known phishing URLs
+- Apply list of known phishing URLs as maintenance task
 - Note the offending URL and its short URI have both been purged
-- Add a new URL, observe that the encoded sequence number has increased.
-- When manually updating the sequence number between runs, the system uses
-  this newer value.
+- Add a new URL, observe that the encoded sequence number has increased
+- When manually updating the sequence number between stop/start, the system
+  uses this newer value
 - Manually creating a reserved Short URI causes sequence number to skip this
   value when adding a new Full URL via HTML Form
 
@@ -441,7 +458,8 @@ of further consideration.)
 Stop the server with **Ctrl C** again.
 
 Replace contents of `sequence.dat` file with a triple digit integer or
-larger plus Newline.
+larger plus Newline.  (Again, this file is likely owned by `root` if created
+initially from within Docker container.)
 
 	echo 99999999 | sudo tee sequence.dat 
 
@@ -475,7 +493,7 @@ Click the following link:
 [http://localhost:8088/BA](http://localhost:8088/BA)
 
 (If that link *doesn't* work, did you manually change the contents of
-sequence.dat` or `self.sequence_number` within url-shortener.py?)
+`sequence.dat` or `self.sequence_number` within url-shortener.py?)
 
 Note that your web browser has been forwarded appropriately.
 
