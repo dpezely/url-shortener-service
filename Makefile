@@ -86,6 +86,9 @@ docker-maintenance: known-phishing-urls.txt
 
 .PHONY: clean
 clean:
+	@echo 'invoking `sudo` to remove files created within Docker container'
+	sudo rm -rf '__pycache__'
+	sudo find . -name '*.pyc' -delete
 	find . -name '*~' -delete
 
 .PHONY: clean-data
@@ -95,6 +98,6 @@ clean-data:
 	  anti-phish anti-phish.????-??-??T*
 
 .PHONY: dist-clean
-dist-clean: clean clean-data
+dist-clean: clean-data clean
 	rm -f known-phishing-urls.txt online-valid.json.bz2
 	docker rmi url-shortener || true
