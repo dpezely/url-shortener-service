@@ -375,6 +375,53 @@ adjusting number of read-only app instances.  (See To Do items, as these
 should be generated via Chef, Puppet, etc. for complying with *one source of
 truth*.)
 
+## Reserved Words & Generating Revenue
+
+Protect against potentially offensive words appearing in the public URI
+namespace.  As hinted above, you might also generate revenue by selling
+vanity URIs.  Both use the same mechanism.
+
+Simply populate the public URI namespace in advance to enforce reserved
+words.
+
+These must go under the `short/` subdirectory, which gets generated on first
+production run unless already existing.
+
+For the simple case of a two letter word, such as *Hi*, create a file under
+`short/` as:
+
+	Hi.txt
+
+Simply creating the word is enough to reserve it from being used when the
+encoded sequence number would match this word.
+
+These words are case-sensitive, distinguishing *Hi* separately from *hi*.
+(This becomes challenging on macOS with default file system tuning due to
+being "case-remembering" rather than strictly case sensitive-- beyond scope
+here.)
+
+For more than two characters, split the word after its first two characters,
+next two characters, followed by the rest.  Reserving the word, *furniture*,
+create subdirectory and file name path under `short/` as:
+
+	fu/rn/iture.txt
+    
+(This pattern of 2 + 2 + remainder for splitting the sequence of characters
+is configurable.  See global variables within
+[url-shortener.py](./url-shortener.py): `FIRST_PREFIX_DEPTH` and
+`SECOND_PREFIX_DEPTH`, respectively.)
+
+The public URI namespace may be extended to allow hyphens, punctuation,
+accented characters, etc. without impacting encoded sequence numbers.
+Decoding isn't used in production.
+
+For adding hyphens or other symbols to allowable URIs, modify the Regular
+Expression of `.strict_valid_uri` static member field within
+[listener.py](./listener.py).  Currently, only a leading underscore
+character distinguishes namespaces of Short URIs versus internal resources
+like HTML pages, `style.css`, etc.  Be certain to address that subtlety.
+Also, create and exercise rigorous test cases around such modifications.
+
 ## Automated Testing
 
 A minimum of test coverage exists.
@@ -506,6 +553,13 @@ entry's value.  (This is a feature accommodating reserved words such as
 skipping offensive words in various natural languages as well as offering
 vanity URIs as a premium product to generate revenue potentially paying for
 the whole thing.)
+
+Repeat steps within this subsection again, but create an empty .txt file by
+omitting the URL.  When visiting the short URL, your browser should report
+`HTTP 404 Not Found` status.  The log message from Docker container should
+indicate that it's reserved:
+
+> **reserved** path=short/BA.txt
 
 ## License
 
