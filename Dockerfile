@@ -5,11 +5,11 @@
 ### docker run -it --rm -v $(pwd):/data -v $(pwd)/htdocs:/var/www/html \
 ###   -p 8088:80  url-shortener ./one-writer-multiple-readers.sh
 
-FROM ubuntu:18.04
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && apt-get dist-upgrade -y
-RUN apt-get install -y python3 python3-pip nginx
+FROM alpine
+RUN apk update
+RUN apk add --update python3 python3-dev g++
 RUN pip3 install --upgrade pip
+RUN apk add nginx
 
 RUN mkdir /project
 WORKDIR /project
@@ -24,20 +24,21 @@ RUN pip3 install -r requirements.txt
 # Only for release, may these become candidates for inclusion here:
 # COPY url-shortener.py .
 # COPY base62ish.py .
-# COPY nginx.conf .
+# COPY one-writer-multiple-readers.sh .
+# ENTRYPOINT /project/one-writer-multiple-readers.sh
 
 # Location for mounting directory tree of URLs:
 RUN mkdir /data
 WORKDIR /data
 
 # Configure and start HTTP service in background:
-RUN rm -f /etc/nginx/sites-enabled/default
-COPY nginx.conf /etc/nginx/sites-available/url-shortener
-RUN ln -s /etc/nginx/sites-available/url-shortener /etc/nginx/sites-enabled/
-RUN nginx -t
+RUN rm -f /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/url-shortener.conf
 
-# COPY one-writer-multiple-readers.sh .
-# ENTRYPOINT one-writer-multiple-readers.sh
+# Work-around bug from PID file location not being created:
+RUN mkdir -p /run/nginx/
+
+RUN nginx -t
 
 # Only Nginx port needs to be exposed, as app uses internal communications:
 expose 80
