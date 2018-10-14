@@ -79,12 +79,16 @@ class Listener(http.server.BaseHTTPRequestHandler):
             else:
                 with open(filepath, 'r') as file:
                     full_url = file.read(MAX_URL_SIZE)
-
-                self.send_response(302) # "Found" (moved temporarily)
-                self.send_header('Location', full_url)
-                content = "302 (Found) Redirect: {}".format(full_url)
-                print("found path={} full-url={}".format(filepath, full_url),
-                      file=sys.stderr)
+                if full_url:
+                    print("found path={} full-url={}".format(filepath, full_url),
+                          file=sys.stderr)
+                    self.send_response(302) # "Found" (moved temporarily)
+                    self.send_header('Location', full_url)
+                    content = "302 (Found) Redirect: {}".format(full_url)
+                else:
+                    print("reserved path={}".format(filepath), file=sys.stderr)
+                    self.send_response(404)
+                    content = "404 Not Found"
 
         self.send_header('Content-Type','text/plain;charset=utf-8')
         self.send_header('Length', str(len(content)))
