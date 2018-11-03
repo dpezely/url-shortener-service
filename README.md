@@ -561,6 +561,17 @@ indicate that it's reserved:
 
 > **reserved** path=short/BA.txt
 
+### Reject Recursive URLs
+
+Supplying a URL to be shortened that includes our own domain name will be
+rejected.
+
+That is, assuming the default use of Example.com as the display URL's domain
+name, attempting to shorten http://example.com or https://www.example.com or
+similar variations will be rejected.
+
+> Shorten: **status=REJECTED**, pathname=None, shortened=
+
 ## License
 
 MIT License

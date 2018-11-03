@@ -31,6 +31,7 @@ FIRST_PREFIX_DEPTH = 2
 SECOND_PREFIX_DEPTH = FIRST_PREFIX_DEPTH + 2
 
 STATUS_UNKNOWN = 'UNKNOWN'
+STATUS_REJECTED = 'REJECTED'
 STATUS_SHORTENED = 'SHORTENED'
 STATUS_DUPLICATE = 'DUPLICATE'
 STATUS_PHISHING = 'PHISHING'
@@ -40,7 +41,7 @@ FILE_EXTENSION = '.txt'
 
 class UrlShortener:
     
-    __slots__ = ('public_display_url', 'public_static_url',
+    __slots__ = ('public_display_url', 'public_static_url', 'recursive_url_re',
                  'success_landing', 'phishing_landing', 'home_landing',
                  'address', 'port', 'data_directory',
                  'anti_phishing_dir', 'anti_phishing_dir_updating',
@@ -53,6 +54,9 @@ class UrlShortener:
         # See also .configure() when changing these values:
         self.public_display_url = 'example.com/' # Omit http:// for aesthetics
         self.public_static_url = 'http://localhost:8088' # omit trailing '/'
+        self.recursive_url_re = re.compile('^http[s]?://(www\.)*' +
+                                           self.public_display_url,
+                                           re.IGNORECASE)
         self.home_landing = self.public_static_url + '/'
         self.success_landing = self.public_static_url + '/_v1/results'
         self.phishing_landing = self.public_static_url + '/_v1/phishing'
@@ -134,6 +138,14 @@ class UrlShortener:
                 self.short_uri = args.url_or_uri[0]
             else:
                 self.full_url = args.url_or_uri[0]
+
+        if self.public_display_url.find('http') == 0:
+            self.recursive_url_re = re.compile(self.public_display_url,
+                                               re.IGNORECASE)
+        else:
+            self.recursive_url_re = re.compile('^http[s]?://(www\.)*' +
+                                               self.public_display_url,
+                                               re.IGNORECASE)
             
     def parse_args(self):
         parser = argparse.ArgumentParser(
@@ -201,6 +213,8 @@ class UrlShortener:
         status = STATUS_UNKNOWN
         file_path = None
         shortened = ''
+        if self.recursive_url_re.match(full_url):
+            status = STATUS_REJECTED
         while status is STATUS_UNKNOWN:
             # Using same custom encoding here for compressing path name:
             #print("shorten: full-url={}".format(full_url))

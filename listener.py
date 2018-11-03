@@ -43,6 +43,9 @@ class Listener(http.server.BaseHTTPRequestHandler):
                                  .format(self.shortener.success_landing,
                                          self.shortener.public_display_url,
                                          short_uri, full_url))
+            elif status == 'REJECTED':
+                served = True
+                self.send_response(400) # Bad Request
             elif status == 'PHISHING':
                 served = True
                 self.send_response(302) # "Found" (moved temporarily)
